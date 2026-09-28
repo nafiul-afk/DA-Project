@@ -1,0 +1,22 @@
+# Local Python environments and caches
+.venv/
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+*.py[cod]
+
+# Source datasets and derived project outputs (kept out of this code-only repository)
+data/*.csv
+diabetic_data.csv
+artifacts/
+figures/
+tables/
+docs/*.pdf
+ReadmitRisk_Final_Presentation.pptx
+docs/ReadmitRisk_Final_Presentation.pdf
+ReadmitRisk_Notebook.ipynb
+SUBMISSION_FILES.csv
+
+# Runtime and OS files
+*.log
+.DS_Store
