@@ -1,0 +1,7 @@
+strategy,patients_selected,spending,budget,budget_feasible,expected_prevented_readmissions,expected_avoided_cost,expected_net_savings,roi,solver,objective,solution_status,proven_optimal,solver_status_code,solver_message,mip_gap,time_limit_seconds
+Optimized multiple-choice,1399,69950.0,69950.0,True,49.89534518461784,748430.1777692677,678480.1777692677,9.699502183978094,scipy.optimize.milp / HiGHS,prevented,optimal within solver tolerance,True,0.0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.0,15.0
+Random (seed 42),1399,69950.0,69950.0,True,22.292128591373945,334381.92887060915,264431.92887060915,3.780299197578401,,prevented,baseline,,,,,
+First-come (encounter ID proxy),1399,69950.0,69950.0,True,21.49861748657621,322479.2622986432,252529.26229864318,3.6101395610956852,,prevented,baseline,,,,,
+Top risk (cheapest tier),1399,69950.0,69950.0,True,49.89534518461784,748430.1777692677,678480.1777692677,9.699502183978094,,prevented,baseline,,,,,
+Blanket (all patients; may exceed budget),13998,699900.0,69950.0,False,223.27822951355682,3349173.4427033523,2649273.4427033523,3.7852170920179344,,prevented,baseline,,,,,
+Equal-budget lottery (expectation),1399,69950.0,69950.0,True,22.315062372443638,334725.9355866546,264775.9355866546,3.7852170920179353,,prevented,analytical random-allocation expectation,,,,,

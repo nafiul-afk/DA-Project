@@ -1,0 +1,63 @@
+{
+  "raw_rows": 101766,
+  "raw_columns": 50,
+  "raw_predictors": 47,
+  "eligible_rows": 99343,
+  "eligible_patients": 69990,
+  "excluded_discharge_rows": 2423,
+  "duplicate_encounters_removed": 0,
+  "repeated_patient_encounters": 29353,
+  "candidate_predictors": 52,
+  "train_near_zero_columns": [
+    "chlorpropamide",
+    "acetohexamide",
+    "tolbutamide",
+    "acarbose",
+    "miglitol",
+    "troglitazone",
+    "tolazamide",
+    "examide",
+    "citoglipton",
+    "glipizide-metformin",
+    "glimepiride-pioglitazone",
+    "metformin-rosiglitazone",
+    "metformin-pioglitazone"
+  ],
+  "retained_predictors": 39,
+  "eligible_prevalence": 0.11388824577474005,
+  "patient_overlap": 0,
+  "dataset_sha256": "0689e7ec031237dc63031b938805c48377748761a3b26acab621567afa24df97",
+  "ids_mapping_sha256": "f1bb82b471cb34649352597572c9b1fb00bd27f77b9f5a22a03dc3eb1039749e",
+  "split_summary": [
+    {
+      "split": "train",
+      "encounters": 59814,
+      "patients": 41994,
+      "positives": 6846,
+      "prevalence": 0.11445480991072324
+    },
+    {
+      "split": "calibration",
+      "encounters": 9978,
+      "patients": 6999,
+      "positives": 1149,
+      "prevalence": 0.11515333734215273
+    },
+    {
+      "split": "validation",
+      "encounters": 9749,
+      "patients": 6999,
+      "positives": 1103,
+      "prevalence": 0.11313980921120115
+    },
+    {
+      "split": "test",
+      "encounters": 19802,
+      "patients": 13998,
+      "positives": 2216,
+      "prevalence": 0.11190788809211191
+    }
+  ],
+  "prediction_time": "At discharge; LOS, final diagnosis and discharge plan must be available.",
+  "policy": "No identifiers or outcome-derived variables in model inputs. Near-zero and rare-level rules fit inside folds."
+}

@@ -5,12 +5,22 @@ __pycache__/
 .ipynb_checkpoints/
 *.py[cod]
 
-# Source datasets and derived project outputs (kept out of this code-only repository)
-data/*.csv
+# Source data and locally generated training outputs
 diabetic_data.csv
-artifacts/
-figures/
-tables/
+data/diabetic_data.csv
+data/IDS_mapping.csv
+artifacts/*.log
+artifacts/gru.keras
+artifacts/lstm.keras
+artifacts/sequence_*.joblib
+artifacts/sequence_*.json
+artifacts/split_indices.npz
+artifacts/split_manifest.csv
+artifacts/provenance.json
+tables/classifier_cv_predictions.csv
+tables/sequence_*.csv
+tables/allocation_assignments.csv
+tables/validation_threshold_curve.csv
 docs/*.pdf
 ReadmitRisk_Final_Presentation.pptx
 docs/ReadmitRisk_Final_Presentation.pdf

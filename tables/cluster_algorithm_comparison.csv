@@ -1,0 +1,3 @@
+algorithm,k,silhouette,davies_bouldin,converged
+K-Means,4,0.08893511457930173,2.322249925554216,True
+GaussianMixture,4,0.05342841255446614,3.6394666076563205,True

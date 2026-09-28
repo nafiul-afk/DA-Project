@@ -1,0 +1,32 @@
+{
+  "selected_model": "LightGBM (tuned)",
+  "feature_set": "Reduced features",
+  "feature_columns": [
+    "discharge_disposition",
+    "number_inpatient",
+    "total_prior_visits",
+    "payer_code",
+    "diag_1_group",
+    "age_ordinal",
+    "number_diagnoses",
+    "insulin",
+    "medical_specialty",
+    "diag_2_group",
+    "time_in_hospital",
+    "lab_procs_per_day",
+    "num_medications",
+    "meds_active_count",
+    "admission_source",
+    "number_emergency",
+    "A1Cresult",
+    "diag_3_group"
+  ],
+  "thresholds": {
+    "balanced": 0.1587477367673096,
+    "high_recall": 0.0959916707070362
+  },
+  "expected_accuracy_floor": 0.8,
+  "score_time": "At discharge",
+  "explanation_units": "uncalibrated base model raw output",
+  "random_seed": 42
+}

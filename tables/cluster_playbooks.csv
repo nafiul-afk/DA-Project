@@ -1,0 +1,5 @@
+cluster,tier,training_readmission_rate,suggested_care_team_playbook
+3,Low,0.08034033056698514,Standard discharge education; verify medication list and routine follow-up contact.
+1,Moderate,0.1051110495269013,"Early phone check; confirm follow-up attendance, glucose-monitoring access, and medication understanding."
+0,High,0.12427596859312653,Nurse follow-up within the locally agreed interval; review prior admissions and coordinate outpatient support.
+2,Critical,0.23685335613510047,Care-team review for intensive case management; assess social barriers and coordinate a personalized transition plan.

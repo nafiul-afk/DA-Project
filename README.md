@@ -1,8 +1,12 @@
-# ReadmitRisk — Code
+# ReadmitRisk
 
 Source code for the ReadmitRisk Hospital Readmission Risk & Resource Allocation Platform, developed for Data Analytics Laboratory, Summer 2026, United International University.
 
-This is intentionally a **code-only** repository. It excludes the source dataset, trained models, generated tables/figures, notebook outputs, PDFs, and presentation files.
+This repository is ready to deploy on Streamlit Community Cloud. It includes the saved dashboard model, cleaned dashboard data, and tables used by the four dashboard tabs. It excludes raw source data, sequence-model files, notebook output, PDFs, and presentation files.
+
+## Deploy on Streamlit Community Cloud
+
+Deploy `app.py` from the `main` branch. Before deploying, open **Advanced settings** and select **Python 3.12**. The dashboard dependencies are in `requirements.txt`; TensorFlow is intentionally excluded because the live dashboard uses saved scikit-learn/LightGBM artifacts rather than the sequence-training models.
 
 ## Setup
 

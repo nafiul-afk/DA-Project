@@ -1,0 +1,288 @@
+{
+  "cohort": "Training partition only; held-out patients never enter EDA.",
+  "encounters": 59814,
+  "patients": 41994,
+  "readmissions": 6846,
+  "readmission_rate": 0.11445480991072324,
+  "mean_length_of_stay": 4.379359347309994,
+  "figures": [
+    {
+      "figure": "figures/eda_age.png",
+      "title": "Age: risk is not uniform across life stages",
+      "insight": "[80-90): 13.0% readmitted (1,288/9,915); [10-20): 5.9%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_admission_type.png",
+      "title": "Admission type and 30-day readmission",
+      "insight": "Emergency: 11.9% readmitted (3,728/31,336); Elective: 10.6%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_discharge_disposition.png",
+      "title": "Discharge destination identifies follow-up needs",
+      "insight": "Rehabilitation facility: 28.0% readmitted (330/1,177); Home: 9.3%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_admission_source.png",
+      "title": "Admission source and 30-day readmission",
+      "insight": "Other (rare levels): 13.4% readmitted (81/605); Another healthcare facility: 9.1%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_diag_1_group.png",
+      "title": "Primary diagnosis: different groups, different needs",
+      "insight": "Injury: 12.7% readmitted (527/4,144); Musculoskeletal: 9.9%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_race.png",
+      "title": "Race: descriptive differences need a fairness audit",
+      "insight": "Asian: 12.0% readmitted (47/393); Unknown: 8.6%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_gender.png",
+      "title": "Gender: compare rates without assuming causation",
+      "insight": "Female: 11.5% readmitted (3,713/32,174); Male: 11.3%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_prior_inpatient_band.png",
+      "title": "Prior inpatient visits flag repeat-use patterns",
+      "insight": "5+: 37.0% readmitted (442/1,195); 0: 8.6%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_insulin.png",
+      "title": "Insulin status and observed readmission",
+      "insight": "Down: 14.6% readmitted (1,051/7,195); No: 10.2%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_change.png",
+      "title": "Medication change is a marker of care complexity",
+      "insight": "Ch: 12.1% readmitted (3,373/27,947); No: 10.9%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_diabetesMed.png",
+      "title": "Diabetes medication use and observed readmission",
+      "insight": "Yes: 11.9% readmitted (5,523/46,360); No: 9.8%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_A1Cresult.png",
+      "title": "A1C testing status and readmission",
+      "insight": "Not tested: 11.8% readmitted (5,859/49,700); >7: 9.1%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_medication_count_band.png",
+      "title": "Medication burden and follow-up planning",
+      "insight": "31+: 13.2% readmitted (393/2,969); 0–5: 7.3%. These are descriptive differences, not causes."
+    },
+    {
+      "figure": "figures/eda_length_of_stay.png",
+      "title": "Length of stay: compare within each outcome group",
+      "insight": "Mean stay was 4.78 days for readmitted encounters versus 4.33 days for others; a distribution test below checks the association on independent patients."
+    },
+    {
+      "figure": "figures/eda_numeric_correlation.png",
+      "title": "Numeric features: related signals and redundancy",
+      "insight": "number inpatient has the strongest numeric rank association with readmission (ρ=0.141); no single numeric field explains risk."
+    },
+    {
+      "figure": "figures/eda_top10_risk_segments.png",
+      "title": "Top risk segments: prioritize sufficiently large groups",
+      "insight": "Highest observed segment: 40–59 / Digestive / 2+ prior: 29.3% (91/311), 2.6× overall. Exploratory ranking needs prospective validation."
+    }
+  ],
+  "chart_count": 16,
+  "hypotheses": [
+    {
+      "id": "H1",
+      "hypothesis": "More prior inpatient visits are associated with higher 30-day readmission risk.",
+      "test": "Pearson chi-square",
+      "feature": "prior_inpatient_band",
+      "statistic": 449.0240374724158,
+      "p_value": 7.0605549053497654e-96,
+      "degrees_of_freedom": 4,
+      "n_patients": 41994,
+      "effect_size_name": "Cramer's V",
+      "effect_size": 0.10340491294957072,
+      "minimum_expected_count": 11.807281992665619,
+      "fraction_expected_below_5": 0.0,
+      "direction_consistent": true,
+      "direction_evidence": "0 prior: 8.16%; 2+ prior: 21.96% (first encounter per patient).",
+      "holm_adjusted_p": 3.530277452674883e-95,
+      "conclusion": "Supported",
+      "interpretation": "Evidence of association only; observational data do not establish an intervention effect."
+    },
+    {
+      "id": "H2",
+      "hypothesis": "Readmitted patients tend to have longer index stays.",
+      "test": "One-sided Mann–Whitney U",
+      "feature": "time_in_hospital",
+      "statistic": 80728795.5,
+      "p_value": 3.5135379881940173e-33,
+      "n_patients": 41994,
+      "effect_size_name": "Rank-biserial correlation",
+      "effect_size": 0.11641821334948688,
+      "direction_consistent": true,
+      "direction_evidence": "Mean/median days: readmitted 4.79/4; others 4.23/3.",
+      "holm_adjusted_p": 1.405415195277607e-32,
+      "conclusion": "Supported",
+      "interpretation": "Evidence of association only; observational data do not establish an intervention effect."
+    },
+    {
+      "id": "H3_insulin",
+      "hypothesis": "Readmission frequency differs across insulin categories.",
+      "test": "Pearson chi-square",
+      "feature": "insulin",
+      "statistic": 29.217310480242457,
+      "p_value": 2.015898742794177e-06,
+      "degrees_of_freedom": 3,
+      "n_patients": 41994,
+      "effect_size_name": "Cramer's V",
+      "effect_size": 0.02637706659838486,
+      "minimum_expected_count": 367.918512168405,
+      "fraction_expected_below_5": 0.0,
+      "direction_consistent": true,
+      "holm_adjusted_p": 4.031797485588354e-06,
+      "conclusion": "Supported",
+      "interpretation": "Evidence of association only; observational data do not establish an intervention effect."
+    },
+    {
+      "id": "H3_change",
+      "hypothesis": "Readmission frequency differs across change categories.",
+      "test": "Pearson chi-square",
+      "feature": "change",
+      "statistic": 9.395615382062818,
+      "p_value": 0.0021750498468982387,
+      "degrees_of_freedom": 1,
+      "n_patients": 41994,
+      "effect_size_name": "Cramer's V",
+      "effect_size": 0.014957843781303009,
+      "minimum_expected_count": 1710.9743058532172,
+      "fraction_expected_below_5": 0.0,
+      "direction_consistent": true,
+      "holm_adjusted_p": 0.0021750498468982387,
+      "conclusion": "Supported",
+      "interpretation": "Evidence of association only; observational data do not establish an intervention effect."
+    },
+    {
+      "id": "H3_diabetes_med",
+      "hypothesis": "Readmission frequency differs across diabetesMed categories.",
+      "test": "Pearson chi-square",
+      "feature": "diabetesMed",
+      "statistic": 32.45967152893457,
+      "p_value": 1.2169181694902087e-08,
+      "degrees_of_freedom": 1,
+      "n_patients": 41994,
+      "effect_size_name": "Cramer's V",
+      "effect_size": 0.027802153602521428,
+      "minimum_expected_count": 897.7139591370196,
+      "fraction_expected_below_5": 0.0,
+      "direction_consistent": true,
+      "holm_adjusted_p": 3.650754508470626e-08,
+      "conclusion": "Supported",
+      "interpretation": "Evidence of association only; observational data do not establish an intervention effect."
+    }
+  ],
+  "inference_design": "First eligible encounter ordered by encounter_id for each of 41,994 development patients; Holm correction for five prespecified tests at family-wise alpha 0.05. Encounter ID is only an ordering proxy. H1's chi-square is an omnibus test; its stated direction is checked using 2+ versus zero prior admissions, not assumed to prove a monotonic dose response.",
+  "descriptive_caution": "Chart rates describe encounters, including repeat encounters. Administrative levels below 1% of training encounters are pooled; unpooled counts are also saved. All risk segments are exploratory with at least 100 encounters; their sample size is not an independent-patient count.",
+  "key_business_insights": [
+    "The training partition contains 59,814 encounters from 41,994 patients; 6,846 (11.45%) were readmitted within 30 days. Always predicting no readmission would be 88.55% accurate, so accuracy alone is misleading.",
+    "Prior inpatient burden is useful for triage: no prior visits had 8.6% readmission (39,712 encounters), while 5+ had 37.0% (1,195); H1 adjusted p=3.53e-95.",
+    "Mean stay was 4.78 days for readmitted encounters versus 4.33 days for others; a distribution test below checks the association on independent patients.",
+    "Among age groups with at least 100 encounters, [80-90) had the highest observed rate, 13.0% (1,288/9,915); age alone should not decide access to care.",
+    "Injury was the highest-rate primary diagnosis group at 12.7% (527/4,144), helping define a follow-up workflow.",
+    "Discharge to Rehabilitation facility had 28.0% readmission (330/1,177); transitions of care deserve review.",
+    "Insulin status 'Down' had 14.6% readmission (7,195 encounters). This may reflect illness severity; it is not evidence that insulin causes readmission.",
+    "A1C category 'Not tested' had 11.8% readmission (49,700 encounters); testing patterns and patient mix can confound this comparison.",
+    "The 31+-medication group had the highest observed medication-band rate, 13.2% (2,969 encounters), suggesting medication review as an operational hypothesis.",
+    "Highest observed segment: 40–59 / Digestive / 2+ prior: 29.3% (91/311), 2.6× overall. Exploratory ranking needs prospective validation."
+  ],
+  "top_risk_segments": [
+    {
+      "segment_age": "40–59",
+      "diag_1_group": "Digestive",
+      "segment_prior": "2+ prior",
+      "encounters": 311,
+      "readmissions": 91,
+      "rate": 0.2926045016,
+      "lift_vs_overall": 2.5565068155
+    },
+    {
+      "segment_age": "60–79",
+      "diag_1_group": "Neoplasms",
+      "segment_prior": "2+ prior",
+      "encounters": 105,
+      "readmissions": 28,
+      "rate": 0.2666666667,
+      "lift_vs_overall": 2.3298860649
+    },
+    {
+      "segment_age": "Under 40",
+      "diag_1_group": "Diabetes",
+      "segment_prior": "2+ prior",
+      "encounters": 264,
+      "readmissions": 68,
+      "rate": 0.2575757576,
+      "lift_vs_overall": 2.2504581308
+    },
+    {
+      "segment_age": "40–59",
+      "diag_1_group": "Diabetes",
+      "segment_prior": "2+ prior",
+      "encounters": 354,
+      "readmissions": 91,
+      "rate": 0.2570621469,
+      "lift_vs_overall": 2.2459706769
+    },
+    {
+      "segment_age": "60–79",
+      "diag_1_group": "Injury",
+      "segment_prior": "2+ prior",
+      "encounters": 322,
+      "readmissions": 80,
+      "rate": 0.248447205,
+      "lift_vs_overall": 2.1707013027
+    },
+    {
+      "segment_age": "80+",
+      "diag_1_group": "Respiratory",
+      "segment_prior": "2+ prior",
+      "encounters": 257,
+      "readmissions": 63,
+      "rate": 0.2451361868,
+      "lift_vs_overall": 2.1417726958
+    },
+    {
+      "segment_age": "60–79",
+      "diag_1_group": "Diabetes",
+      "segment_prior": "2+ prior",
+      "encounters": 292,
+      "readmissions": 69,
+      "rate": 0.2363013699,
+      "lift_vs_overall": 2.0645822578
+    },
+    {
+      "segment_age": "60–79",
+      "diag_1_group": "Other",
+      "segment_prior": "2+ prior",
+      "encounters": 752,
+      "readmissions": 177,
+      "rate": 0.2353723404,
+      "lift_vs_overall": 2.05646526
+    },
+    {
+      "segment_age": "Under 40",
+      "diag_1_group": "Other",
+      "segment_prior": "2+ prior",
+      "encounters": 113,
+      "readmissions": 26,
+      "rate": 0.2300884956,
+      "lift_vs_overall": 2.0102999232
+    },
+    {
+      "segment_age": "60–79",
+      "diag_1_group": "Respiratory",
+      "segment_prior": "2+ prior",
+      "encounters": 683,
+      "readmissions": 150,
+      "rate": 0.2196193265,
+      "lift_vs_overall": 1.9188300315
+    }
+  ]
+}

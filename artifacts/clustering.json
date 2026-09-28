@@ -1,0 +1,219 @@
+{
+  "selected_k": 4,
+  "features": [
+    "age_ordinal",
+    "time_in_hospital",
+    "num_lab_procedures",
+    "num_procedures",
+    "num_medications",
+    "number_outpatient",
+    "number_emergency",
+    "number_inpatient",
+    "number_diagnoses",
+    "med_changes_count",
+    "meds_active_count",
+    "lab_procs_per_day",
+    "diag_diversity"
+  ],
+  "train_rows": 59814,
+  "test_rows": 19802,
+  "selection_rule": "Lowest mean rank across training silhouette (high), Davies\u2013Bouldin (low), and normalized elbow distance (high); ties prefer smaller k.",
+  "tier_naming": "Names ordered by TRAINING observed readmission rates after unsupervised fitting; outcomes and patient identifiers are excluded from the cluster features.",
+  "unit": "Encounter-level profiles with disjoint train/test patients; repeat encounters remain within their patient's split.",
+  "care_note": "Exploratory segmentation and suggested playbooks, requiring prospective care-team validation.",
+  "cluster_to_tier": {
+    "3": "Low",
+    "1": "Moderate",
+    "0": "High",
+    "2": "Critical"
+  },
+  "pca_explained_variance": [
+    0.180276930529104,
+    0.10804266336036757
+  ],
+  "gmm_adjusted_rand_agreement": 0.12095769592224152,
+  "algorithm_comparison": [
+    {
+      "algorithm": "K-Means",
+      "k": 4,
+      "silhouette": 0.08893511457930173,
+      "davies_bouldin": 2.322249925554216,
+      "converged": true
+    },
+    {
+      "algorithm": "GaussianMixture",
+      "k": 4,
+      "silhouette": 0.05342841255446614,
+      "davies_bouldin": 3.6394666076563205,
+      "converged": true
+    }
+  ],
+  "selection_scores": [
+    {
+      "k": 2,
+      "inertia": 689421.296204275,
+      "silhouette": 0.12688836477806478,
+      "davies_bouldin": 2.5522091908089863,
+      "elbow_distance": 0.0,
+      "mean_metric_rank": 3.1666666666666665
+    },
+    {
+      "k": 3,
+      "inertia": 644394.4770502411,
+      "silhouette": 0.08859243897907143,
+      "davies_bouldin": 2.5657109557891182,
+      "elbow_distance": 0.04809778539120345,
+      "mean_metric_rank": 3.6666666666666665
+    },
+    {
+      "k": 4,
+      "inertia": 606564.8427038137,
+      "silhouette": 0.08893511457930173,
+      "davies_bouldin": 2.322249925554216,
+      "elbow_distance": 0.0602511441843773,
+      "mean_metric_rank": 2.3333333333333335
+    },
+    {
+      "k": 5,
+      "inertia": 577855.1972224684,
+      "silhouette": 0.07966875422346287,
+      "davies_bouldin": 2.2819323469286927,
+      "elbow_distance": 0.02685714257222472,
+      "mean_metric_rank": 3.3333333333333335
+    },
+    {
+      "k": 6,
+      "inertia": 547836.6705869525,
+      "silhouette": 0.09831059806838822,
+      "davies_bouldin": 2.102418923294038,
+      "elbow_distance": 0.0,
+      "mean_metric_rank": 2.5
+    }
+  ],
+  "train_profiles": [
+    {
+      "split": "Train",
+      "cluster": 0,
+      "tier": "High",
+      "patients_or_encounters": 15538,
+      "mean_age": 66.89985841163599,
+      "mean_los": 7.367293087913502,
+      "mean_prior_visits": 0.8114300424765092,
+      "mean_medications": 23.885442141845797,
+      "dominant_diagnosis": "Circulatory",
+      "readmission_rate": 0.12427596859312653
+    },
+    {
+      "split": "Train",
+      "cluster": 1,
+      "tier": "Moderate",
+      "patients_or_encounters": 25259,
+      "mean_age": 70.55841482243953,
+      "mean_los": 3.8254087651926048,
+      "mean_prior_visits": 0.731778771922879,
+      "mean_medications": 13.476503424521953,
+      "dominant_diagnosis": "Circulatory",
+      "readmission_rate": 0.1051110495269013
+    },
+    {
+      "split": "Train",
+      "cluster": 2,
+      "tier": "Critical",
+      "patients_or_encounters": 4678,
+      "mean_age": 63.42026507054297,
+      "mean_los": 4.5733219324497645,
+      "mean_prior_visits": 6.778324070115434,
+      "mean_medications": 17.496793501496366,
+      "dominant_diagnosis": "Circulatory",
+      "readmission_rate": 0.23685335613510047
+    },
+    {
+      "split": "Train",
+      "cluster": 3,
+      "tier": "Low",
+      "patients_or_encounters": 14339,
+      "mean_age": 57.15426459306786,
+      "mean_los": 2.054118139340261,
+      "mean_prior_visits": 0.6228467815049864,
+      "mean_medications": 11.414254829486017,
+      "dominant_diagnosis": "Circulatory",
+      "readmission_rate": 0.08034033056698514
+    }
+  ],
+  "test_profiles": [
+    {
+      "split": "Held-out test",
+      "cluster": 0,
+      "tier": "High",
+      "patients_or_encounters": 5212,
+      "mean_age": 67.04336147352264,
+      "mean_los": 7.385264773599386,
+      "mean_prior_visits": 0.7860706062931696,
+      "mean_medications": 23.798349961627014,
+      "dominant_diagnosis": "Circulatory",
+      "readmission_rate": 0.12778204144282426
+    },
+    {
+      "split": "Held-out test",
+      "cluster": 1,
+      "tier": "Moderate",
+      "patients_or_encounters": 8337,
+      "mean_age": 70.30526568309944,
+      "mean_los": 3.826916156890968,
+      "mean_prior_visits": 0.7256807004917836,
+      "mean_medications": 13.47175242893127,
+      "dominant_diagnosis": "Circulatory",
+      "readmission_rate": 0.10219503418495862
+    },
+    {
+      "split": "Held-out test",
+      "cluster": 2,
+      "tier": "Critical",
+      "patients_or_encounters": 1439,
+      "mean_age": 62.414871438498956,
+      "mean_los": 4.466990965948575,
+      "mean_prior_visits": 7.272411396803336,
+      "mean_medications": 17.369006254343294,
+      "dominant_diagnosis": "Circulatory",
+      "readmission_rate": 0.231410701876303
+    },
+    {
+      "split": "Held-out test",
+      "cluster": 3,
+      "tier": "Low",
+      "patients_or_encounters": 4814,
+      "mean_age": 57.20814291649356,
+      "mean_los": 2.0610718737017035,
+      "mean_prior_visits": 0.6312837557125052,
+      "mean_medications": 11.364146240132946,
+      "dominant_diagnosis": "Circulatory",
+      "readmission_rate": 0.07582052347320316
+    }
+  ],
+  "playbooks": [
+    {
+      "cluster": 3,
+      "tier": "Low",
+      "training_readmission_rate": 0.08034033056698514,
+      "suggested_care_team_playbook": "Standard discharge education; verify medication list and routine follow-up contact."
+    },
+    {
+      "cluster": 1,
+      "tier": "Moderate",
+      "training_readmission_rate": 0.1051110495269013,
+      "suggested_care_team_playbook": "Early phone check; confirm follow-up attendance, glucose-monitoring access, and medication understanding."
+    },
+    {
+      "cluster": 0,
+      "tier": "High",
+      "training_readmission_rate": 0.12427596859312653,
+      "suggested_care_team_playbook": "Nurse follow-up within the locally agreed interval; review prior admissions and coordinate outpatient support."
+    },
+    {
+      "cluster": 2,
+      "tier": "Critical",
+      "training_readmission_rate": 0.23685335613510047,
+      "suggested_care_team_playbook": "Care-team review for intensive case management; assess social barriers and coordinate a personalized transition plan."
+    }
+  ]
+}
