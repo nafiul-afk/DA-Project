@@ -19,10 +19,10 @@ def _widget_by_label(widgets, label):
 
 class DashboardTests(unittest.TestCase):
     @unittest.skipUnless(DATA_READY, "Generate cleaned data before testing the dashboard.")
-    def test_four_tabs_and_eda_filter(self):
+    def test_dashboard_tabs_and_eda_filter(self):
         app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=90).run()
         self.assertEqual(len(app.exception), 0)
-        self.assertEqual(len(app.tabs), 4)
+        self.assertEqual(len(app.tabs), 5)
         before = int(_widget_by_label(app.metric, "Eligible encounters").value.replace(",", ""))
         app.multiselect(key="filter_diag_1_group").set_value(["Diabetes"]).run()
         self.assertEqual(len(app.exception), 0)

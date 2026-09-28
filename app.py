@@ -190,7 +190,9 @@ if data.empty:
     st.info("Generate the analysis and saved artifacts first: run `python run_project.py` from the project folder. Place `diabetic_data.csv` and `IDS_mapping.csv` in `data/` before running.")
     st.stop()
 
-tab_eda, tab_risk, tab_budget, tab_tiers = st.tabs(["01 · EDA", "02 · Risk Scorer", "03 · Budget Simulator", "04 · Risk Tiers"])
+tab_eda, tab_risk, tab_budget, tab_tiers, tab_metrics = st.tabs(
+    ["01 · EDA", "02 · Risk Scorer", "03 · Budget Simulator", "04 · Risk Tiers", "05 · Model Metrics"]
+)
 
 with tab_eda:
     st.subheader("Explore the readmission picture")
@@ -436,6 +438,74 @@ with tab_tiers:
             st.dataframe(csv_artifact("tables/cluster_selection.csv"), hide_index=True, use_container_width=True)
             st.dataframe(csv_artifact("tables/cluster_algorithm_comparison.csv"), hide_index=True, use_container_width=True)
             st.caption(f"K-Means / Gaussian mixture adjusted Rand agreement: {cluster_metrics.get('gmm_adjusted_rand_agreement', 0):.3f}.")
+
+with tab_metrics:
+    st.subheader("Model evaluation results")
+    st.caption("Metrics were computed on patient-isolated data. Accuracy is shown alongside recall, precision, PR-AUC, ROC-AUC, and calibration because readmission is an imbalanced outcome.")
+
+    classifier_metrics = csv_artifact("tables/classifier_metrics.csv")
+    model_comparison = csv_artifact("tables/model_comparison.csv")
+    sequence_metrics = csv_artifact("tables/sequence_model_comparison.csv")
+
+    st.markdown("**Discharge-time classifier comparison**")
+    if not model_comparison.empty:
+        comparison_columns = [column for column in ["model", "cv_pr_auc_mean", "cv_pr_auc_std", "cv_roc_auc_mean", "cv_accuracy", "cv_recall", "full_fit_seconds"] if column in model_comparison]
+        comparison_view = model_comparison[comparison_columns].sort_values("cv_pr_auc_mean", ascending=False)
+        st.dataframe(comparison_view, hide_index=True, use_container_width=True,
+                     column_config={
+                         "model": "Model", "cv_pr_auc_mean": st.column_config.NumberColumn("Grouped CV PR-AUC", format="%.3f"),
+                         "cv_pr_auc_std": st.column_config.NumberColumn("PR-AUC std.", format="%.3f"),
+                         "cv_roc_auc_mean": st.column_config.NumberColumn("CV ROC-AUC", format="%.3f"),
+                         "cv_accuracy": st.column_config.NumberColumn("Native CV accuracy", format="%.1%"),
+                         "cv_recall": st.column_config.NumberColumn("Native CV recall", format="%.1%"),
+                         "full_fit_seconds": st.column_config.NumberColumn("Fit time (s)", format="%.1f"),
+                     })
+        st.caption("Tuned LightGBM was selected by grouped cross-validation PR-AUC. Native CV accuracy/recall use each model's default decision rule and are not the deployed threshold results.")
+    else:
+        st.info("Classifier-comparison results are unavailable.")
+
+    st.markdown("**Selected calibrated LightGBM: independent held-out test results**")
+    if not classifier_metrics.empty:
+        final_view = classifier_metrics.loc[classifier_metrics["split"].eq("test")].copy()
+        final_columns = [column for column in ["operating_point", "accuracy", "balanced_accuracy", "precision", "recall", "f1", "roc_auc", "pr_auc", "brier", "threshold", "selection_rate"] if column in final_view]
+        final_view = final_view[final_columns]
+        final_view["operating_point"] = final_view["operating_point"].replace({"balanced": "Balanced / accuracy", "high_recall": "High recall"})
+        st.dataframe(final_view, hide_index=True, use_container_width=True,
+                     column_config={
+                         "operating_point": "Operating point", "accuracy": st.column_config.NumberColumn("Accuracy", format="%.2%"),
+                         "balanced_accuracy": st.column_config.NumberColumn("Balanced accuracy", format="%.2%"),
+                         "precision": st.column_config.NumberColumn("Precision", format="%.2%"),
+                         "recall": st.column_config.NumberColumn("Recall", format="%.2%"),
+                         "f1": st.column_config.NumberColumn("F1", format="%.2%"),
+                         "roc_auc": st.column_config.NumberColumn("ROC-AUC", format="%.3f"),
+                         "pr_auc": st.column_config.NumberColumn("PR-AUC", format="%.3f"),
+                         "brier": st.column_config.NumberColumn("Brier score", format="%.3f"),
+                         "threshold": st.column_config.NumberColumn("Risk threshold", format="%.2%"),
+                         "selection_rate": st.column_config.NumberColumn("Patients alerted", format="%.2%"),
+                     })
+        st.caption("Balanced mode prioritizes maintaining accuracy; High recall mode identifies more recorded readmissions but creates more review alerts. Thresholds were selected on validation patients and frozen before testing.")
+    else:
+        st.info("Final classifier metrics are unavailable.")
+
+    st.markdown("**Sequence-forecasting models: separate next-encounter task**")
+    if not sequence_metrics.empty:
+        sequence_test = sequence_metrics.loc[sequence_metrics["split"].eq("test")].copy()
+        sequence_columns = [column for column in ["model", "operating_point", "accuracy", "precision", "recall", "f1", "roc_auc", "pr_auc", "brier"] if column in sequence_test]
+        sequence_test = sequence_test[sequence_columns]
+        sequence_test["operating_point"] = sequence_test["operating_point"].replace({"balanced": "Balanced / accuracy", "high_recall": "High recall"})
+        st.dataframe(sequence_test, hide_index=True, use_container_width=True,
+                     column_config={
+                         "model": "Model", "operating_point": "Operating point", "accuracy": st.column_config.NumberColumn("Accuracy", format="%.2%"),
+                         "precision": st.column_config.NumberColumn("Precision", format="%.2%"),
+                         "recall": st.column_config.NumberColumn("Recall", format="%.2%"),
+                         "f1": st.column_config.NumberColumn("F1", format="%.2%"),
+                         "roc_auc": st.column_config.NumberColumn("ROC-AUC", format="%.3f"),
+                         "pr_auc": st.column_config.NumberColumn("PR-AUC", format="%.3f"),
+                         "brier": st.column_config.NumberColumn("Brier score", format="%.3f"),
+                     })
+        st.caption("GRU, LSTM, and history-only XGBoost use earlier encounters to forecast the next recorded encounter. They use a repeated-encounter subset and therefore should not be compared directly with the discharge-time LightGBM metrics above.")
+    else:
+        st.info("Sequence-model results are unavailable.")
 
 st.divider()
 st.caption("ReadmitRisk · Nafiul Islam & Onika Tahmim Subha · Group 8 · Data Analytics Laboratory · Summer 2026")
