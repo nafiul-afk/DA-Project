@@ -70,6 +70,30 @@ def styled_chart(fig, height=350):
     return fig
 
 
+def percent_text(value, digits=1):
+    """Format a probability consistently, including values read as object dtype."""
+    return "—" if pd.isna(value) else f"{float(value):.{digits}%}"
+
+
+def decimal_text(value, digits=3):
+    return "—" if pd.isna(value) else f"{float(value):.{digits}f}"
+
+
+def metrics_display(frame, percent_columns=(), decimal_columns=(), seconds_columns=()):
+    """Use strings for dashboard tables so Streamlit never exposes raw fractions."""
+    view = frame.copy()
+    for column in percent_columns:
+        if column in view:
+            view[column] = view[column].map(percent_text)
+    for column in decimal_columns:
+        if column in view:
+            view[column] = view[column].map(decimal_text)
+    for column in seconds_columns:
+        if column in view:
+            view[column] = view[column].map(lambda value: "—" if pd.isna(value) else f"{float(value):.1f}")
+    return view
+
+
 def display_comparison(table):
     visible = [col for col in ["strategy", "patients_selected", "spending", "budget_feasible",
                                "expected_prevented_readmissions", "expected_net_savings", "roi"] if col in table]
@@ -445,24 +469,47 @@ with tab_metrics:
 
     classifier_metrics = csv_artifact("tables/classifier_metrics.csv")
     model_comparison = csv_artifact("tables/model_comparison.csv")
+    candidate_metrics = csv_artifact("tables/classifier_candidate_metrics.csv")
     sequence_metrics = csv_artifact("tables/sequence_model_comparison.csv")
 
     st.markdown("**Discharge-time classifier comparison**")
     if not model_comparison.empty:
         comparison_columns = [column for column in ["model", "cv_pr_auc_mean", "cv_pr_auc_std", "cv_roc_auc_mean", "cv_accuracy", "cv_recall", "full_fit_seconds"] if column in model_comparison]
         comparison_view = model_comparison[comparison_columns].sort_values("cv_pr_auc_mean", ascending=False)
-        st.dataframe(comparison_view, hide_index=True, use_container_width=True,
-                     column_config={
-                         "model": "Model", "cv_pr_auc_mean": st.column_config.NumberColumn("Grouped CV PR-AUC", format="%.3f"),
-                         "cv_pr_auc_std": st.column_config.NumberColumn("PR-AUC std.", format="%.3f"),
-                         "cv_roc_auc_mean": st.column_config.NumberColumn("CV ROC-AUC", format="%.3f"),
-                         "cv_accuracy": st.column_config.NumberColumn("Native CV accuracy", format="%.1%"),
-                         "cv_recall": st.column_config.NumberColumn("Native CV recall", format="%.1%"),
-                         "full_fit_seconds": st.column_config.NumberColumn("Fit time (s)", format="%.1f"),
-                     })
+        chart_columns = [column for column in ["cv_pr_auc_mean", "cv_roc_auc_mean"] if column in comparison_view]
+        chart_metrics = comparison_view.melt(id_vars="model", value_vars=chart_columns, var_name="Metric", value_name="Score").dropna()
+        chart_metrics["Metric"] = chart_metrics["Metric"].replace({"cv_pr_auc_mean": "Grouped CV PR-AUC", "cv_roc_auc_mean": "Grouped CV ROC-AUC"})
+        fig = px.bar(chart_metrics, x="model", y="Score", color="Metric", barmode="group", text=chart_metrics["Score"].map(lambda value: f"{value:.3f}"),
+                     title="Algorithm comparison on patient-grouped cross-validation")
+        fig.update_yaxes(range=[0, 1], tickformat=".0%", title="Score")
+        fig.update_xaxes(title="")
+        st.plotly_chart(styled_chart(fig, 390), use_container_width=True)
+        comparison_display = metrics_display(comparison_view,
+            percent_columns=["cv_accuracy", "cv_recall"],
+            decimal_columns=["cv_pr_auc_mean", "cv_pr_auc_std", "cv_roc_auc_mean"],
+            seconds_columns=["full_fit_seconds"])
+        comparison_display = comparison_display.rename(columns={"model": "Model", "cv_pr_auc_mean": "Grouped CV PR-AUC", "cv_pr_auc_std": "PR-AUC std.",
+            "cv_roc_auc_mean": "CV ROC-AUC", "cv_accuracy": "Native CV accuracy", "cv_recall": "Native CV recall", "full_fit_seconds": "Fit time (s)"})
+        st.dataframe(comparison_display, hide_index=True, use_container_width=True)
         st.caption("Tuned LightGBM was selected by grouped cross-validation PR-AUC. Native CV accuracy/recall use each model's default decision rule and are not the deployed threshold results.")
     else:
         st.info("Classifier-comparison results are unavailable.")
+
+    st.markdown("**Four classifier families: validation-frozen accuracy-target evaluation**")
+    if not candidate_metrics.empty:
+        candidate_test = candidate_metrics.loc[candidate_metrics["split"].eq("test")].copy()
+        candidate_columns = [column for column in ["model", "accuracy", "balanced_accuracy", "precision", "recall", "f1", "roc_auc", "pr_auc", "brier", "threshold", "selection_rate"] if column in candidate_test]
+        candidate_view = candidate_test[candidate_columns]
+        candidate_chart = candidate_view.melt(id_vars="model", value_vars=["accuracy", "recall", "pr_auc"], var_name="Metric", value_name="Score")
+        fig = px.bar(candidate_chart, x="model", y="Score", color="Metric", barmode="group", title="Held-out comparison with validation-frozen thresholds")
+        fig.update_yaxes(range=[0, 1], tickformat=".0%", title="Score")
+        fig.update_xaxes(title="")
+        st.plotly_chart(styled_chart(fig, 380), use_container_width=True)
+        candidate_display = metrics_display(candidate_view, percent_columns=["accuracy", "balanced_accuracy", "precision", "recall", "f1", "threshold", "selection_rate"], decimal_columns=["roc_auc", "pr_auc", "brier"])
+        st.dataframe(candidate_display.rename(columns={"model": "Model", "balanced_accuracy": "Balanced accuracy", "roc_auc": "ROC-AUC", "pr_auc": "PR-AUC", "brier": "Brier score", "threshold": "Validation-frozen threshold", "selection_rate": "Patients alerted"}), hide_index=True, use_container_width=True)
+        st.caption("Every listed threshold was selected on validation patients to satisfy an 82% validation-accuracy floor, then evaluated on new test patients. This exceeds the requested 70% accuracy target without resampling or changing the test distribution. Compare recall and precision as well as accuracy.")
+    else:
+        st.info("Candidate-family metrics are not in the currently saved artifacts. The algorithm comparison above is available; rerun the classifier phase with `--force` once to create this validation-frozen table.")
 
     st.markdown("**Selected calibrated LightGBM: independent held-out test results**")
     if not classifier_metrics.empty:
@@ -470,19 +517,14 @@ with tab_metrics:
         final_columns = [column for column in ["operating_point", "accuracy", "balanced_accuracy", "precision", "recall", "f1", "roc_auc", "pr_auc", "brier", "threshold", "selection_rate"] if column in final_view]
         final_view = final_view[final_columns]
         final_view["operating_point"] = final_view["operating_point"].replace({"balanced": "Balanced / accuracy", "high_recall": "High recall"})
-        st.dataframe(final_view, hide_index=True, use_container_width=True,
-                     column_config={
-                         "operating_point": "Operating point", "accuracy": st.column_config.NumberColumn("Accuracy", format="%.2%"),
-                         "balanced_accuracy": st.column_config.NumberColumn("Balanced accuracy", format="%.2%"),
-                         "precision": st.column_config.NumberColumn("Precision", format="%.2%"),
-                         "recall": st.column_config.NumberColumn("Recall", format="%.2%"),
-                         "f1": st.column_config.NumberColumn("F1", format="%.2%"),
-                         "roc_auc": st.column_config.NumberColumn("ROC-AUC", format="%.3f"),
-                         "pr_auc": st.column_config.NumberColumn("PR-AUC", format="%.3f"),
-                         "brier": st.column_config.NumberColumn("Brier score", format="%.3f"),
-                         "threshold": st.column_config.NumberColumn("Risk threshold", format="%.2%"),
-                         "selection_rate": st.column_config.NumberColumn("Patients alerted", format="%.2%"),
-                     })
+        operating_chart = final_view.melt(id_vars="operating_point", value_vars=["accuracy", "precision", "recall", "f1"], var_name="Metric", value_name="Rate")
+        fig = px.bar(operating_chart, x="Metric", y="Rate", color="operating_point", barmode="group", text=operating_chart["Rate"].map(lambda value: f"{value:.1%}"),
+                     title="Deployment operating-point trade-off on held-out patients")
+        fig.update_yaxes(range=[0, 1], tickformat=".0%", title="Rate")
+        fig.update_xaxes(title="")
+        st.plotly_chart(styled_chart(fig, 380), use_container_width=True)
+        final_display = metrics_display(final_view, percent_columns=["accuracy", "balanced_accuracy", "precision", "recall", "f1", "threshold", "selection_rate"], decimal_columns=["roc_auc", "pr_auc", "brier"])
+        st.dataframe(final_display.rename(columns={"operating_point": "Operating point", "balanced_accuracy": "Balanced accuracy", "roc_auc": "ROC-AUC", "pr_auc": "PR-AUC", "brier": "Brier score", "threshold": "Risk threshold", "selection_rate": "Patients alerted"}), hide_index=True, use_container_width=True)
         st.caption("Balanced mode prioritizes maintaining accuracy; High recall mode identifies more recorded readmissions but creates more review alerts. Thresholds were selected on validation patients and frozen before testing.")
     else:
         st.info("Final classifier metrics are unavailable.")
@@ -493,16 +535,8 @@ with tab_metrics:
         sequence_columns = [column for column in ["model", "operating_point", "accuracy", "precision", "recall", "f1", "roc_auc", "pr_auc", "brier"] if column in sequence_test]
         sequence_test = sequence_test[sequence_columns]
         sequence_test["operating_point"] = sequence_test["operating_point"].replace({"balanced": "Balanced / accuracy", "high_recall": "High recall"})
-        st.dataframe(sequence_test, hide_index=True, use_container_width=True,
-                     column_config={
-                         "model": "Model", "operating_point": "Operating point", "accuracy": st.column_config.NumberColumn("Accuracy", format="%.2%"),
-                         "precision": st.column_config.NumberColumn("Precision", format="%.2%"),
-                         "recall": st.column_config.NumberColumn("Recall", format="%.2%"),
-                         "f1": st.column_config.NumberColumn("F1", format="%.2%"),
-                         "roc_auc": st.column_config.NumberColumn("ROC-AUC", format="%.3f"),
-                         "pr_auc": st.column_config.NumberColumn("PR-AUC", format="%.3f"),
-                         "brier": st.column_config.NumberColumn("Brier score", format="%.3f"),
-                     })
+        sequence_display = metrics_display(sequence_test, percent_columns=["accuracy", "precision", "recall", "f1"], decimal_columns=["roc_auc", "pr_auc", "brier"])
+        st.dataframe(sequence_display.rename(columns={"model": "Model", "operating_point": "Operating point", "roc_auc": "ROC-AUC", "pr_auc": "PR-AUC", "brier": "Brier score"}), hide_index=True, use_container_width=True)
         st.caption("GRU, LSTM, and history-only XGBoost use earlier encounters to forecast the next recorded encounter. They use a repeated-encounter subset and therefore should not be compared directly with the discharge-time LightGBM metrics above.")
     else:
         st.info("Sequence-model results are unavailable.")

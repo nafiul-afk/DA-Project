@@ -271,6 +271,31 @@ def run_classifier(frame, splits, output_dir=Path(".")):
     chosen_name = tree_names.iloc[0].model
     base = candidates[chosen_name]
     candidate_table.to_csv(root / "tables/model_comparison.csv", index=False)
+
+    # Report a fair, deployment-style result for each classifier family. Each
+    # candidate is fit on training patients, calibrated on separate patients,
+    # receives its threshold from validation patients, and is scored only once
+    # on the held-out test set. The 82% validation floor is stricter than the
+    # course's 70% accuracy request; recall remains visible beside accuracy.
+    dashboard_candidates = {
+        "Logistic Regression": candidates["Logistic Regression"],
+        "Random Forest": candidates["Random Forest"],
+        "XGBoost": candidates["XGBoost"],
+        chosen_name: base,
+    }
+    candidate_metric_rows = []
+    for name, pipeline in dashboard_candidates.items():
+        calibrated_candidate = _calibrate(pipeline, X["calibration"], y["calibration"])
+        validation_p = calibrated_candidate.predict_proba(X["validation"])[:, 1]
+        candidate_thresholds = choose_thresholds(y["validation"], validation_p)
+        test_p = calibrated_candidate.predict_proba(X["test"])[:, 1]
+        candidate_metric_rows.append(dict(model=name, operating_point="accuracy_target",
+            **compute_metrics(y["validation"], validation_p, candidate_thresholds["balanced"]),
+            split="validation", threshold_source="validation patients"))
+        candidate_metric_rows.append(dict(model=name, operating_point="accuracy_target",
+            **compute_metrics(y["test"], test_p, candidate_thresholds["balanced"]),
+            split="test", threshold_source="validation patients"))
+    pd.DataFrame(candidate_metric_rows).to_csv(root / "tables/classifier_candidate_metrics.csv", index=False)
     # Same estimator and same folds isolate the resampling strategy comparison.
     imbalance_rows = []
     strategies = {
